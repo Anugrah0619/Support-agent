@@ -1,19 +1,31 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "AI-powered multi-agent customer support backend",
   "main": "index.js",
+  "type": "commonjs",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "node src/app.ts",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "test": "echo \"No tests yet\""
   },
-  "keywords": [],
+  "keywords": [
+    "ai",
+    "multi-agent",
+    "customer-support",
+    "prisma",
+    "postgresql",
+    "hono"
+  ],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
-    "@prisma/client": "^7.2.0",
+    "@prisma/client": "5.8.1",
     "dotenv": "^17.2.3",
-    "hono": "^4.11.4",
-    "prisma": "^6.19.2"
+    "hono": "^4.11.4"
+  },
+  "devDependencies": {
+    "prisma": "5.8.1"
   }
 }
