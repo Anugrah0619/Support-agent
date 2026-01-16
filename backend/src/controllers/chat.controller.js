@@ -2,7 +2,6 @@ const { createMessage } = require('../services/chat.service');
 
 async function sendMessage(c) {
   const body = await c.req.json();
-
   const { conversationId, text } = body;
 
   if (!conversationId || !text) {
@@ -12,11 +11,12 @@ async function sendMessage(c) {
     );
   }
 
-  const message = await createMessage(conversationId, text);
+  const result = await createMessage(conversationId, text);
 
   return c.json({
     success: true,
-    message,
+    routedTo: result.routedTo,
+    message: result.userMessage,
   });
 }
 
