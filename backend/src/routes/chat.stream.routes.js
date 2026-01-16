@@ -12,18 +12,25 @@ streamRoutes.post('/messages/stream', async (c) => {
   }
 
   return streamText(c, async (stream) => {
-    // Call existing service (reuse logic)
-    const result = await createMessage(conversationId, text);
+    // 1. Notify typing start
+    await stream.write('[typing:start]\n');
 
+    // Small delay to simulate thinking
+    await new Promise((r) => setTimeout(r, 500));
+
+    // 2. Process message normally
+    const result = await createMessage(conversationId, text);
     const replyText =
       result.agentMessage?.text || 'Processing your request...';
 
-    // Simulate typing effect
+    // 3. Stream reply character by character
     for (const char of replyText) {
       await stream.write(char);
       await new Promise((r) => setTimeout(r, 30));
     }
 
+    // 4. Notify typing end
+    await stream.write('\n[typing:end]');
     await stream.close();
   });
 });
