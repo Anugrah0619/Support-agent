@@ -1,14 +1,10 @@
 const { createMessage } = require('../services/chat.service');
 
 async function sendMessage(c) {
-  const body = await c.req.json();
-  const { conversationId, text } = body;
+  const { conversationId, text } = await c.req.json();
 
   if (!conversationId || !text) {
-    return c.json(
-      { error: 'conversationId and text are required' },
-      400
-    );
+    return c.json({ error: 'conversationId and text required' }, 400);
   }
 
   const result = await createMessage(conversationId, text);
@@ -16,7 +12,8 @@ async function sendMessage(c) {
   return c.json({
     success: true,
     routedTo: result.routedTo,
-    message: result.userMessage,
+    userMessage: result.userMessage,
+    agentMessage: result.agentMessage,
   });
 }
 

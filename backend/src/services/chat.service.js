@@ -1,5 +1,6 @@
 const { prisma } = require('../db/prisma');
 const { routeMessage } = require('../agents/router.agent');
+const { supportAgentReply } = require('../agents/support.agent');
 
 async function createMessage(conversationId, text) {
   // Save user message
@@ -11,12 +12,28 @@ async function createMessage(conversationId, text) {
     },
   });
 
-  // Decide which agent should handle it
-  const agentType = routeMessage(text);
+  // Route message
+  const routedTo = routeMessage(text);
+
+  let agentMessage = null;
+
+  // Call Support Agent
+  if (routedTo === 'support') {
+    const replyText = supportAgentReply(text);
+
+    agentMessage = await prisma.message.create({
+      data: {
+        conversationId,
+        sender: 'agent',
+        text: replyText,
+      },
+    });
+  }
 
   return {
+    routedTo,
     userMessage,
-    routedTo: agentType,
+    agentMessage,
   };
 }
 
