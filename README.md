@@ -82,3 +82,9 @@ do npm run seed = Seed data inserted successfully
 do - npm install @hono/node-server
 Run - node src/app.ts
 in http://localhost:3000/health you can see - {"status":"ok","message":"Backend is running"}``
+
+-------------------------------------------------------
+
+5️⃣ First API route (POST /chat/messages)
+do - node src/app.ts
+use postman to check if success or not
