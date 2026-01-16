@@ -75,3 +75,10 @@ Roadmap -
 3️⃣ Seed fake data
 added seed data into prisma/seed.ts and updated package.json accordingly
 do npm run seed = Seed data inserted successfully
+
+-------------------------------------------------------
+
+4️⃣ Basic server (app.ts) + health route
+do - npm install @hono/node-server
+Run - node src/app.ts
+in http://localhost:3000/health you can see - {"status":"ok","message":"Backend is running"}``
