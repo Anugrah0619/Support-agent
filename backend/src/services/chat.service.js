@@ -36,7 +36,7 @@ async function createMessage(conversationId, text) {
 
   // 5. SUPPORT AGENT
   if (routedTo === 'support') {
-    const replyText = supportAgentReply(text, history);
+    const replyText = await supportAgentReply(text, history);
 
     agentMessage = await prisma.message.create({
       data: {
