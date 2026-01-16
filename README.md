@@ -44,3 +44,34 @@ support-agent/
 └── myenv              (we’ll discuss this)
 
 ---------------------------------------------------------
+
+Roadmap - 
+
+0️⃣ Initial Backend Proj setup
+1️⃣ Database design (Prisma schema)
+2️⃣ Database connection (Prisma client)
+3️⃣ Seed fake data
+4️⃣ Basic server (app.ts) + health route
+5️⃣ First API route (POST /chat/messages)
+6️⃣ Router Agent logic
+7️⃣ One sub-agent end-to-end (Support Agent)
+8️⃣ Add Order + Billing agents
+9️⃣ Conversation memory
+🔟 Optional: streaming / frontend
+
+-------------------------------------------------------
+
+2️⃣ PostgreSQL & Prisma Setup-
+- create DB in psql -   psql postgres
+                        CREATE DATABASE support_agent;
+                        \q
+
+- in backend/.env, DB url -     DATABASE_URL="postgresql://postgres@localhost:5432/support_agent"
+- Now run prisma migration -    cd backend
+                                npx prisma migrate dev --name init
+
+-------------------------------------------------------
+
+3️⃣ Seed fake data
+added seed data into prisma/seed.ts and updated package.json accordingly
+do npm run seed = Seed data inserted successfully
