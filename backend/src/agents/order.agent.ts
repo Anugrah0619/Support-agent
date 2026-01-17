@@ -1,72 +1,41 @@
-import { generateText } from "ai";
+import { generateText, streamText } from "ai";
 import { groq } from "@ai-sdk/groq";
-import { ROUTE_BACK } from "./agent.constants";
-import {
-  getLatestOrderByUser,
-  getDeliveryStatus,
-} from "../tools/order.tool";
+import { getLatestOrderByUser } from "../tools/order.tool";
 
-type OrderContext = {
-  userId: number;
-  history: { sender: string; text: string }[];
-};
-
-/**
- * Order Agent
- * Handles order status, shipping, delivery
- */
+/* NON-STREAMING */
 export async function handleOrderQuery(
   message: string,
-  context: OrderContext
+  context: { userId: number; history: any[] }
 ): Promise<string> {
-  const text = message.toLowerCase();
-
-  // 1️⃣ SCOPE GUARD (VERY IMPORTANT)
-  if (
-    text.includes("payment") ||
-    text.includes("refund") ||
-    text.includes("invoice") ||
-    text.includes("bill")
-  ) {
-    return ROUTE_BACK;
-  }
-
-  // 2️⃣ FETCH ORDER DATA
   const order = await getLatestOrderByUser(context.userId);
 
-  if (!order) {
-    return "I couldn’t find any orders for you.";
-  }
+  if (!order) return "I couldn't find any order.";
 
-  const deliveryStatus = await getDeliveryStatus(order.id);
+  return `Your order is ${order.status}. Delivery date is ${
+    order.deliveryDate ?? "not scheduled"
+  }.`;
+}
 
-  // 3️⃣ FORMAT CONTEXT
-  const historyText = context.history
-    .map((m) => `${m.sender}: ${m.text}`)
-    .join("\n");
+/* STREAMING */
+export async function handleOrderQueryStream(
+  message: string,
+  context: { userId: number; history: any[] },
+  onToken: (token: string) => void
+) {
+  const order = await getLatestOrderByUser(context.userId);
 
-  // 4️⃣ LLM RESPONSE (GROUNDING ONLY)
-  const result = await generateText({
+  const text = order
+    ? `Your order is ${order.status}. Delivery date is ${
+        order.deliveryDate ?? "not scheduled"
+      }.`
+    : "I couldn't find any order.";
+
+  const result = await streamText({
     model: groq("llama-3.1-8b-instant"),
-    prompt: `
-You are an order support agent.
-
-Conversation so far:
-${historyText}
-
-Order details:
-- Status: ${order.status}
-- Delivery date: ${deliveryStatus ?? "Not scheduled"}
-
-User question:
-"${message}"
-
-Rules:
-- Answer ONLY using order data above
-- If delivery date is missing, say it is not scheduled yet
-- Be concise and factual
-`,
+    prompt: text,
   });
 
-  return result.text;
+  for await (const delta of result.textStream) {
+    onToken(delta);
+  }
 }

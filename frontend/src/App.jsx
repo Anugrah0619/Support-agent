@@ -1,26 +1,27 @@
 import { useState } from "react";
 import "./App.css";
 
-const API_URL = "http://localhost:3000/api/chat/messages";
+const API_URL = "http://localhost:3000/api/chat/stream";
 
 function App() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [conversationId, setConversationId] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
 
   async function sendMessage() {
     if (!input.trim() || loading) return;
 
     const userMessage = input;
     setInput("");
+    setLoading(true);
 
+    // Add user message
     setMessages((prev) => [
       ...prev,
       { sender: "user", text: userMessage },
     ]);
-
-    setLoading(true);
 
     try {
       const response = await fetch(API_URL, {
@@ -29,24 +30,51 @@ function App() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userId: 1,
-          message: userMessage,
+          userId: 1, // demo user (as per assessment)
           conversationId,
+          message: userMessage,
         }),
       });
 
-      if (!response.ok) {
-        throw new Error("API request failed");
+      if (!response.body) {
+        throw new Error("Streaming not supported by browser");
       }
 
-      const data = await response.json();
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
 
-      setConversationId(data.conversationId);
+      let agentText = "";
 
+      // Add empty agent message placeholder
       setMessages((prev) => [
         ...prev,
-        { sender: "agent", text: data.reply },
+        { sender: "agent", text: "" },
       ]);
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+
+        // Typing indicator
+        if (chunk.includes("[agent_typing]")) {
+          setIsTyping(true);
+          continue;
+        }
+
+        setIsTyping(false);
+        agentText += chunk;
+
+        setMessages((prev) => {
+          const updated = [...prev];
+          updated[updated.length - 1] = {
+            sender: "agent",
+            text: agentText,
+          };
+          return updated;
+        });
+      }
     } catch (error) {
       console.error(error);
       setMessages((prev) => [
@@ -58,6 +86,7 @@ function App() {
       ]);
     } finally {
       setLoading(false);
+      setIsTyping(false);
     }
   }
 
@@ -72,6 +101,12 @@ function App() {
             {m.text}
           </div>
         ))}
+
+        {isTyping && (
+          <div className="message agent">
+            <em>Agent is typing...</em>
+          </div>
+        )}
       </div>
 
       <div className="input-area">
