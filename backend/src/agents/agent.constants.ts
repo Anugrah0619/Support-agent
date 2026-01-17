@@ -1,0 +1,1 @@
+export const ROUTE_BACK = "__ROUTE_BACK__";

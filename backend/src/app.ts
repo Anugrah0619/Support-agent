@@ -1,34 +1,34 @@
-const { Hono } = require('hono');
-const { serve } = require('@hono/node-server');
+import { Hono } from "hono";
+import { cors } from "hono/cors";
 
-// Existing routes
-const chatRoutes = require('./routes/chat.routes');
-
-// New streaming routes (optional feature)
-const chatStreamRoutes = require('./routes/chat.stream.routes');
+import chatRoutes from "./routes/chat.routes";
+import chatRestRoutes from "./routes/chat.rest.routes";
+import chatStreamRoutes from "./routes/chat.stream.routes";
+import agentRoutes from "./routes/agent.routes";
 
 const app = new Hono();
 
+/**
+ * ✅ CORS FIX
+ */
+app.use(
+  "/*",
+  cors({
+    origin: "http://localhost:5173",
+    allowMethods: ["GET", "POST", "DELETE", "OPTIONS"],
+    allowHeaders: ["Content-Type"],
+  })
+);
+
 // Health check
-app.get('/health', (c) => {
-  return c.json({
-    status: 'ok',
-    message: 'Backend is running',
-  });
-});
+app.get("/api/health", (c) => c.json({ status: "ok" }));
 
-// Normal chat API (non-streaming)
-app.route('/api/chat', chatRoutes);
+// Chat APIs
+app.route("/api/chat", chatRoutes);       // POST /messages
+app.route("/api/chat", chatRestRoutes);   // GET/DELETE conversations
+app.route("/api/chat", chatStreamRoutes); // POST /stream
 
-// Streaming chat API
-app.route('/api/chat', chatStreamRoutes);
+// Agent APIs
+app.route("/api/agents", agentRoutes);
 
-const port = 3000;
-
-// Start server
-serve({
-  fetch: app.fetch,
-  port,
-});
-
-console.log(`Server running on http://localhost:${port}`);
+export default app;

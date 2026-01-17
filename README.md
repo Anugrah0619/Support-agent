@@ -94,3 +94,63 @@ use postman to check if success or not
 6️⃣ Router Agent logic
 To start backend server always do node src/app.ts
 after that check response in postman 
+
+---------------------------------------------------------
+
+Optional - 
+
+1️⃣ Streaming responses
+2️⃣ Vercel AI SDK (Support Agent only)
+3️⃣ Typing indicator
+4️⃣ README + API docs
+5️⃣ Frontend demo
+
+
+-------------------------------
+To run backend - 
+cd backend
+node src/app.ts
+npm install -D tsx, npx tsx src/app.ts
+npm install @hono/node-server
+npx tsx src/server.ts
+npm install @ai-sdk/groq
+
+
+TO run frontend - 
+cd frontend
+npm run dev
+
+
+__________________________
+# 1. Go to backend
+cd backend
+
+# 2. Install required runtime + dev dependencies
+npm install @prisma/client
+npm install -D prisma
+npm install -D tsx
+npm install csv-parser   # (optional, not used in final version but OK)
+
+# 3. Generate Prisma Client
+npx prisma generate
+
+# 4. Run DB migration (fresh schema)
+npx prisma migrate dev --name init
+
+# 5. (Optional) Reset DB completely if needed
+# ⚠️ This DROPS all tables
+npx prisma migrate reset
+
+# 6. Seed database from CSV (FINAL & STABLE)
+npx tsx scripts/seedFromCsv.ts
+
+# 7. Verify data (optional but recommended)
+npx prisma studio
+
+---------------------------------------------------------------
+
+npm install -D vitest
+npx vitest
+
+
+npm install ai @ai-sdk/google

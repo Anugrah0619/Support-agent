@@ -10,33 +10,59 @@ datasource db {
 model User {
   id            Int            @id @default(autoincrement())
   name          String
+  email         String         @unique
   conversations Conversation[]
+  orders        Order[]
+  payments      Payment[]
 }
+
+// ---------------- CONVERSATION ----------------
 
 model Conversation {
   id        Int       @id @default(autoincrement())
   userId    Int
   user      User      @relation(fields: [userId], references: [id])
   messages  Message[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
+// ---------------- MESSAGE ----------------
+
 model Message {
-  id             Int      @id @default(autoincrement())
+  id             Int       @id @default(autoincrement())
   conversationId Int
-  sender         String
+  sender         String    // user | agent
+  agentType      String?   // router | support | order | billing
   text           String
-  createdAt      DateTime @default(now())
+  createdAt      DateTime  @default(now())
+
   conversation   Conversation @relation(fields: [conversationId], references: [id])
 }
 
+// ---------------- ORDER ----------------
+
 model Order {
-  id     Int    @id @default(autoincrement())
-  userId Int
-  status String
+  id           Int       @id @default(autoincrement())
+  userId       Int
+  user         User      @relation(fields: [userId], references: [id])
+  status       String    // placed | shipped | delivered | cancelled
+  placedAt     DateTime  @default(now())
+  deliveryDate DateTime?
+
+  payments     Payment[]
 }
 
+// ---------------- PAYMENT / INVOICE ----------------
+
 model Payment {
-  id      Int    @id @default(autoincrement())
-  orderId Int
-  status  String
+  id            Int       @id @default(autoincrement())
+  userId        Int
+  orderId       Int
+  user          User      @relation(fields: [userId], references: [id])
+  order         Order     @relation(fields: [orderId], references: [id])
+  amount        Float
+  paymentStatus String    // paid | failed | pending
+  refundStatus  String    // none | processing | completed
+  createdAt     DateTime  @default(now())
 }
