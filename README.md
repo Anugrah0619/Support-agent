@@ -317,11 +317,7 @@ Uses Turborepo to orchestrate both applications
 Frontend UI: http://localhost:5173
 Backend Health Check: http://localhost:3000/api/health
 
-✅ Notes
-
-Backend and frontend are not run separately
-Turborepo ensures consistent dev and build workflows
-Authentication is intentionally omitted to focus on agent logic (as per assessment scope)
+Note - Backend and frontend are not run separately. Turborepo ensures consistent dev and build workflows. Authentication is intentionally omitted to focus on agent logic (as per assessment scope)
 ---
 
 ## 🧪 How to Test (Recommended Order)
@@ -348,7 +344,7 @@ Where is my order?
 What is my payment status?
 Is it shipped?
 
-## 5️⃣ Context Resolution
+### 5️⃣ Context Resolution
 
 Is it shipped?
 When will it be delivered?
