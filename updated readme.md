@@ -191,15 +191,15 @@ support-agent/
 │       └── package.json
 │
 ├── packages/
-       ├── types/                # (Reserved for shared types / RPC)
+      └── api/                   # Shared API contracts (Hono RPC)
 │
 ├── turbo.json
 ├── package.json                 # Root workspace config
 └── README.md
 
 ### Packages
-- `packages/types` → Shared domain models used by backend and frontend
-- Future phases introduce API contracts and RPC definitions
+- `packages/api` → Shared API contracts and domain types used by backend and frontend
+- Enables end-to-end type safety via Hono RPC
 
 ---
 
@@ -219,6 +219,15 @@ This project is structured as a **Turborepo monorepo** to support:
 - `packages/` → Reserved for shared types and API contracts (introduced in later phases)
 
 All applications are orchestrated using Turborepo for unified development and build workflows.
+
+---
+
+## 🔐 End-to-End Type Safety (Hono RPC)
+
+- Introduced Hono RPC for non-streaming APIs
+- Backend defines API contracts once using Zod schemas
+- Frontend consumes fully typed interfaces from `packages/api`
+- Streaming chat remains REST-based due to streaming constraints
 
 ---
 
