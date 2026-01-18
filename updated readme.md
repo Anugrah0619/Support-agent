@@ -372,3 +372,19 @@ All tests are deterministic, isolated, and CI-ready.
 - Order and Billing agents return atomic, non-streaming responses for consistency and correctness
 
 ---
+
+## 🌍 Deployment Notes
+
+This project is deployment-ready for modern platforms.
+
+### Recommended Setup
+- **Backend:** Railway / Render / Fly.io
+- **Database:** Managed PostgreSQL (Railway / Supabase)
+- **Frontend:** Vercel
+
+### Requirements
+- Node.js 18+
+- PostgreSQL
+- Environment variables for database and LLM provider
+
+The backend is designed to run as a single stateless service, while the frontend can be deployed independently.

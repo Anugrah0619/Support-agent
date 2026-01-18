@@ -2,7 +2,7 @@ import { generateText, streamText } from "ai";
 import { groq } from "@ai-sdk/groq";
 import type { Message } from "@support-agent/types";
 
-/* NON-STREAMING */
+/* ---------------- NON-STREAMING ---------------- */
 export async function handleSupportQuery(
   message: string,
   context: { history: Message[] }
@@ -14,20 +14,30 @@ export async function handleSupportQuery(
   const result = await generateText({
     model: groq("llama-3.1-8b-instant"),
     prompt: `
-You are a support agent.
+You are a professional customer support agent.
 
-Conversation:
+STRICT RULES:
+- Assume the user is continuing the SAME issue unless they clearly change topic.
+- DO NOT re-ask questions that were already answered earlier.
+- Use the conversation history as the source of truth.
+- Be concise, specific, and action-oriented.
+- If enough information is available, provide steps instead of asking more questions.
+- If information is missing, ask ONLY the single most important follow-up question.
+
+Conversation so far:
 ${formattedHistory}
 
-User:
+User message:
 ${message}
+
+Your response:
 `,
   });
 
   return result.text;
 }
 
-/* STREAMING VERSION */
+/* ---------------- STREAMING ---------------- */
 export async function handleSupportQueryStream(
   message: string,
   context: { history: Message[] },
@@ -40,13 +50,23 @@ export async function handleSupportQueryStream(
   const result = await streamText({
     model: groq("llama-3.1-8b-instant"),
     prompt: `
-You are a support agent.
+You are a professional customer support agent.
 
-Conversation:
+STRICT RULES:
+- Assume the user is continuing the SAME issue unless they clearly change topic.
+- DO NOT re-ask questions that were already answered earlier.
+- Use the conversation history as the source of truth.
+- Be concise, specific, and action-oriented.
+- If enough information is available, provide steps instead of asking more questions.
+- If information is missing, ask ONLY the single most important follow-up question.
+
+Conversation so far:
 ${formattedHistory}
 
-User:
+User message:
 ${message}
+
+Your response:
 `,
   });
 

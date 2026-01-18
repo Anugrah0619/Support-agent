@@ -23,9 +23,13 @@ model Conversation {
   userId    Int
   user      User      @relation(fields: [userId], references: [id])
   messages  Message[]
+
+  summary   String?   // 🧠 Long-term memory (Phase C)
+
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
+
 
 // ---------------- MESSAGE ----------------
 

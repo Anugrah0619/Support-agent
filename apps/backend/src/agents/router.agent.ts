@@ -18,24 +18,37 @@ export async function routeMessage(
   }
 
   /* -------------------------------
-     2️⃣ STRONG KEYWORD ROUTING
+     2️⃣ STRONG KEYWORD ROUTING (EXPLICIT DOMAINS)
   -------------------------------- */
   if (mentionsBilling(text)) return "billing";
   if (mentionsOrder(text)) return "order";
 
   /* -------------------------------
-     3️⃣ CONTINUATION LOGIC
+     3️⃣ SUPPORT CONTEXT LOCK 🔒
+     If conversation is clearly SUPPORT-related,
+     do NOT allow accidental switching.
   -------------------------------- */
   const lastAgentMessage = [...history]
     .reverse()
     .find((m) => m.sender === "agent" && m.agentType);
 
+  if (
+    !forceFreshIntent &&
+    lastAgentMessage?.agentType === "support" &&
+    mentionsSupportContext(text)
+  ) {
+    return "support";
+  }
+
+  /* -------------------------------
+     4️⃣ CONTINUATION LOGIC
+  -------------------------------- */
   if (!forceFreshIntent && lastAgentMessage && isFollowUp(text)) {
     return lastAgentMessage.agentType as AgentType;
   }
 
   /* -------------------------------
-     4️⃣ LLM FALLBACK
+     5️⃣ LLM FALLBACK (LAST RESORT)
   -------------------------------- */
   return classifyIntent({
     message,
@@ -73,11 +86,29 @@ function mentionsCancel(text: string) {
   return text.includes("cancel");
 }
 
+/**
+ * Support-domain signals:
+ * bugs, crashes, issues, help, not working, etc.
+ */
+function mentionsSupportContext(text: string) {
+  return (
+    text.includes("issue") ||
+    text.includes("problem") ||
+    text.includes("crash") ||
+    text.includes("not working") ||
+    text.includes("error") ||
+    text.includes("help") ||
+    text.includes("fails") ||
+    text.includes("broken")
+  );
+}
+
 function isFollowUp(text: string) {
   return (
     text.startsWith("is it") ||
     text.startsWith("when") ||
     text.startsWith("what about") ||
-    text === "it"
+    text === "it" ||
+    text === "still not working"
   );
 }
