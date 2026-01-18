@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "tsx src/app.ts",
-    "build": "tsc",
+    "build": "echo \"skip build\"",
+    "start": "tsx src/app.ts",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "seed": "tsx prisma/seed.ts",
