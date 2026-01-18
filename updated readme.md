@@ -343,6 +343,23 @@ When will it be delivered?
 
 ---
 
+# 🧪 Testing Strategy
+
+This project follows a layered testing approach:
+
+- **Unit Tests**
+  - Router agent intent classification
+  - Deterministic routing behavior
+- **Integration Tests**
+  - Database-backed Order and Billing tools
+  - Foreign-key–safe setup and teardown
+- **End-to-End Test**
+  - Full chat flow from API request to persisted response
+
+All tests are deterministic, isolated, and CI-ready.
+
+---
+
 # 🧠 Design Decisions
 
 - LLM-based routing avoids brittle keyword-based logic  
