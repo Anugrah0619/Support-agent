@@ -74,8 +74,6 @@ All conversations are **persisted**, **context-aware**, and **user-scoped**.
 - Query conversation history
 - LLM-based responses (streaming enabled)
 
----
-
 #### 2️⃣ Order Agent
 **Responsibilities**
 - Order status
@@ -88,8 +86,6 @@ All conversations are **persisted**, **context-aware**, and **user-scoped**.
 **Design**
 - Tool-first, deterministic agent
 - Does not use LLMs to avoid hallucination
-
----
 
 #### 3️⃣ Billing Agent
 **Responsibilities**
@@ -156,22 +152,29 @@ All messages and agent replies are stored to support:
 ## 🌐 API Endpoints
 
 ### Health
+```
 GET /api/health
+```
 ---
 ### Chat
+```
 POST /api/chat/messages # Send a message
 GET /api/chat/conversations?userId=1
 GET /api/chat/conversations/:id
 DELETE /api/chat/conversations/:id?userId=1
+```
 ---
 ### Agents
+```
 GET /api/agents
 GET /api/agents/:type/capabilities
+```
 
 ---
 
 ## 📁 Project Structure
 
+```
 support-agent/
 ├── apps/
 │   ├── backend/                 # Hono + Agents + Prisma
@@ -199,6 +202,7 @@ support-agent/
 ├── turbo.json
 ├── package.json                 # Root workspace config
 └── README.md
+```
 
 ### Packages
 - `packages/api` → Shared API contracts and domain types used by backend and frontend
@@ -249,54 +253,66 @@ NOTE - Authentication is intentionally omitted to keep focus on agent logic (as 
 
 ---
 
-# ▶️ Running the Project (Monorepo Setup)
+## ▶️ Running the Project (Monorepo Setup)
 
 This project uses a Turborepo monorepo, so both the backend and frontend are managed and run from the repository root.
 
-## 1️⃣ Clone Repository
+### 1️⃣ Clone Repository
+```
 git clone https://github.com/Anugrah0619/Support-agent.git
 cd Support-agent
+```
 
-## 2️⃣ Install Dependencies (Root)
+### 2️⃣ Install Dependencies (Root)
+```
 npm install
+```
 
 This installs dependencies for:
 Backend (apps/backend)
 Frontend (apps/web)
 Workspace tooling
 
-## 3️⃣ Configure Backend Environment
+### 3️⃣ Configure Backend Environment
 
 Create the environment file: apps/backend/.env
 
+```
 DATABASE_URL="postgresql://postgres@localhost:5432/support_agent"
 GROQ_API_KEY=your_groq_api_key_here
 PRISMA_CLIENT_ENGINE_TYPE=binary
 PRISMA_CLI_QUERY_ENGINE_TYPE=binary
+```
 
 Environment variables are explicitly loaded at runtime to support Node ESM and monorepo execution.
 
-## 4️⃣ Setup Database (Prisma)
+### 4️⃣ Setup Database (Prisma)
+```
 cd apps/backend
 npx prisma generate
 npx prisma migrate dev --name init
 npx prisma studio (Optional)
+```
 
-## 5️⃣ Seed Database with Sample Data
+### 5️⃣ Seed Database with Sample Data
+```
 npx tsx scripts/seedFromCsv.ts
+```
 
-## 6️⃣ Start Full System (Backend + Frontend)
+### 6️⃣ Start Full System (Backend + Frontend)
 
 Return to the repository root:
+```
 cd ../../
 npm run dev
+```
 
 This command:
 Starts the backend on http://localhost:3000
 Starts the frontend on http://localhost:5173
 Uses Turborepo to orchestrate both applications
 
-## 7️⃣ Access the Application
+### 7️⃣ Access the Application
 
 Frontend UI: http://localhost:5173
 Backend Health Check: http://localhost:3000/api/health
@@ -308,37 +324,29 @@ Turborepo ensures consistent dev and build workflows
 Authentication is intentionally omitted to focus on agent logic (as per assessment scope)
 ---
 
-# 🧪 How to Test (Recommended Order)
+## 🧪 How to Test (Recommended Order)
 
-## 1️⃣ Basic Support
+### 1️⃣ Basic Support
 
 Hi
 Can you help me?
 
----
-
-## 2️⃣ Order Flow
+### 2️⃣ Order Flow
 
 Where is my order?
 Is it shipped?
 When will it be delivered?
 
----
-
-## 3️⃣ Billing Flow
+### 3️⃣ Billing Flow
 
 What is my payment status?
 Do I have any refund?
 
----
-
-## 4️⃣ Agent Switching (Key Test)
+### 4️⃣ Agent Switching (Key Test)
 
 Where is my order?
 What is my payment status?
 Is it shipped?
-
----
 
 ## 5️⃣ Context Resolution
 
@@ -347,7 +355,7 @@ When will it be delivered?
 
 ---
 
-# 🧪 Testing Strategy
+## 🧪 Testing Strategy
 
 This project follows a layered testing approach:
 
@@ -364,7 +372,7 @@ All tests are deterministic, isolated, and CI-ready.
 
 ---
 
-# 🧠 Design Decisions
+## 🧠 Design Decisions
 
 - LLM-based routing avoids brittle keyword-based logic  
 - Sub-agents remain focused, modular, and independently testable  
@@ -374,8 +382,6 @@ All tests are deterministic, isolated, and CI-ready.
 - Architecture closely mirrors real-world agentic AI systems used in production  
 - Streaming responses are enabled only for the Support agent
 - Order and Billing agents return atomic, non-streaming responses for consistency and correctness
-
----
 
 ---
 
