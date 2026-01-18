@@ -1,7 +1,8 @@
 import { useState } from "react";
 import "./App.css";
 
-const API_URL = "http://localhost:3000/api/chat/stream";
+// ✅ USE VITE ENV VARIABLE
+const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/chat/stream`;
 
 function App() {
   const [messages, setMessages] = useState([]);
@@ -18,7 +19,6 @@ function App() {
     setInput("");
     setLoading(true);
 
-    // Add user message
     setMessages((prev) => [
       ...prev,
       { sender: "user", text: userMessage },
@@ -31,26 +31,21 @@ function App() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userId: 1, // demo user
+          userId: 1,
           conversationId,
           message: userMessage,
         }),
       });
 
       if (!response.body) {
-        throw new Error("Streaming not supported by browser");
+        throw new Error("Streaming not supported");
       }
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
-
       let agentText = "";
 
-      // Add empty agent message placeholder
-      setMessages((prev) => [
-        ...prev,
-        { sender: "agent", text: "" },
-      ]);
+      setMessages((prev) => [...prev, { sender: "agent", text: "" }]);
 
       while (true) {
         const { value, done } = await reader.read();
@@ -58,7 +53,6 @@ function App() {
 
         const chunk = decoder.decode(value);
 
-        // ---------- REASONING TOKENS ----------
         if (chunk.includes("[thinking]")) {
           setReasoning("Thinking…");
           continue;
@@ -79,9 +73,7 @@ function App() {
           continue;
         }
 
-        // ---------- REAL AGENT TEXT ----------
         setReasoning(null);
-        setIsTyping(false);
         agentText += chunk;
 
         setMessages((prev) => {
@@ -124,12 +116,6 @@ function App() {
         {reasoning && (
           <div className="message agent">
             <em>{reasoning}</em>
-          </div>
-        )}
-
-        {isTyping && (
-          <div className="message agent">
-            <em>Agent is typing...</em>
           </div>
         )}
       </div>
