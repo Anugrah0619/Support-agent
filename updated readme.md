@@ -154,66 +154,56 @@ GET /api/agents/:type/capabilities
 ## 📁 Project Structure
 
 support-agent/
-├── backend/
-│   ├── prisma/
-│   │   ├── schema.prisma
-│   │   └── prisma.config.ts
+├── apps/
+│   ├── backend/                 # Hono + Agents + Prisma
+│   │   ├── prisma/
+│   │   ├── src/
+│   │   │   ├── agents/
+│   │   │   ├── tools/
+│   │   │   ├── services/
+│   │   │   ├── controllers/
+│   │   │   ├── routes/
+│   │   │   ├── middlewares/
+│   │   │   ├── db/
+│   │   │   └── app.ts
+│   │   ├── .env
+│   │   └── package.json
 │   │
-│   ├── scripts/
-│   │   └── seedFromCsv.ts
-│   │
-│   ├── src/
-│   │   ├── agents/
-│   │   │   ├── router.agent.ts        # LLM-based routing agent
-│   │   │   ├── support.agent.ts       # Support sub-agent
-│   │   │   ├── order.agent.ts         # Order sub-agent
-│   │   │   └── billing.agent.ts       # Billing sub-agent
-│   │   │
-│   │   ├── tools/
-│   │   │   ├── conversation.tool.ts   # Conversation history queries
-│   │   │   ├── order.tool.ts          # Order-related DB queries
-│   │   │   └── billing.tool.ts        # Payment & refund queries
-│   │   │
-│   │   ├── services/
-│   │   │   └── chat.service.ts        # Core orchestration logic
-│   │   │
-│   │   ├── controllers/
-│   │   │   └── chat.controller.ts     # HTTP request handlers
-│   │   │
-│   │   ├── routes/
-│   │   │   ├── chat.routes.ts         # /api/chat routes
-│   │   │   └── agent.routes.ts        # /api/agents routes
-│   │   │
-│   │   ├── middlewares/
-│   │   │   └── error.middleware.ts    # Global error handler
-│   │   │
-│   │   ├── db/
-│   │   │   └── prisma.ts              # Prisma client singleton
-│   │   │
-│   │   ├── app.ts                     # Hono app configuration
-│   │   └── server.ts                  # Server bootstrap
-│   │
-│   ├── .env
-│   ├── package.json
-│   ├── package-lock.json
-│   └── tsconfig.json
+│   └── web/                     # React + Vite frontend
+│       ├── src/
+│       ├── index.html
+│       └── package.json
 │
-├── frontend/
-│   ├── src/
-│   │   ├── App.jsx                    # Chat UI
-│   │   ├── main.jsx
-│   │   ├── App.css
-│   │   └── index.css
-│   │
-│   ├── index.html
-│   ├── package.json
-│   └── vite.config.js
+├── packages/                    # (Reserved for shared types / RPC)
 │
-├── README.md
+├── turbo.json
+├── package.json                 # Root workspace config
+└── README.md
 
 ---
 
-## 🔧 Environment Variables (`.env`)
+## 🧩 Monorepo Architecture (Turborepo)
+
+This project is structured as a **Turborepo monorepo** to support:
+
+- Clear separation of frontend and backend apps
+- Shared packages (types, API contracts) without duplication
+- Scalable architecture for future expansion (Hono RPC)
+
+### Apps
+- `apps/backend` → Hono-based AI backend
+- `apps/web` → React + Vite frontend
+
+### Packages
+- `packages/` → Reserved for shared types and API contracts (introduced in later phases)
+
+All applications are orchestrated using Turborepo for unified development and build workflows.
+
+---
+
+## 🔧 Environment Variables
+
+### Backend (`apps/backend/.env`)
 
 ```env
 DATABASE_URL="postgresql://postgres@localhost:5432/support_agent"
@@ -225,53 +215,63 @@ NOTE - Authentication is intentionally omitted to keep focus on agent logic (as 
 
 ---
 
-## Backend Setup
+▶️ Running the Project (Monorepo Setup)
 
-# 1. Clone repository
+This project uses a Turborepo monorepo, so both the backend and frontend are managed and run from the repository root.
+
+1️⃣ Clone Repository
 git clone https://github.com/Anugrah0619/Support-agent.git
-cd Support-agent/backend
+cd Support-agent
 
-# 2. Install dependencies
+2️⃣ Install Dependencies (Root)
 npm install
 
-# 3. Create environment file
-# backend/.env
+This installs dependencies for:
+Backend (apps/backend)
+Frontend (apps/web)
+Workspace tooling
+
+3️⃣ Configure Backend Environment
+
+Create the environment file: apps/backend/.env
+
 DATABASE_URL="postgresql://postgres@localhost:5432/support_agent"
-GROQ_API_KEY=your_groq_api_key
+GROQ_API_KEY=your_groq_api_key_here
+PRISMA_CLIENT_ENGINE_TYPE=binary
+PRISMA_CLI_QUERY_ENGINE_TYPE=binary
 
-# 4. Generate Prisma client
+Environment variables are explicitly loaded at runtime to support Node ESM and monorepo execution.
+
+4️⃣ Setup Database (Prisma)
+cd apps/backend
 npx prisma generate
-
-# 5. Run database migrations
 npx prisma migrate dev --name init
+npx prisma studio (Optional)
 
-# 6. (Optional) Reset database completely
-npx prisma migrate reset
-
-# 7. Seed database with sample data
+5️⃣ Seed Database with Sample Data
 npx tsx scripts/seedFromCsv.ts
 
-# 8. (Optional) Verify data
-npx prisma studio
+6️⃣ Start Full System (Backend + Frontend)
 
-# 9. Start backend server
-npx tsx --env-file .env src/server.ts
-
----
-
-## Frontend setup 
-
-# 1. Navigate to frontend
-cd ../frontend
-
-# 2. Install dependencies
-npm install
-
-# 3. Start frontend
+Return to the repository root:
+cd ../../
 npm run dev
 
-frontend - http://localhost:5173
+This command:
+Starts the backend on http://localhost:3000
+Starts the frontend on http://localhost:5173
+Uses Turborepo to orchestrate both applications
 
+7️⃣ Access the Application
+
+Frontend UI: http://localhost:5173
+Backend Health Check: http://localhost:3000/api/health
+
+✅ Notes
+
+Backend and frontend are not run separately
+Turborepo ensures consistent dev and build workflows
+Authentication is intentionally omitted to focus on agent logic (as per assessment scope)
 ---
 
 ## 🧪 How to Test (Recommended Order)
