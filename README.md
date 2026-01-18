@@ -243,6 +243,7 @@ DATABASE_URL="postgresql://postgres@localhost:5432/support_agent"
 GROQ_API_KEY=your_groq_api_key_here
 PRISMA_CLIENT_ENGINE_TYPE=binary
 PRISMA_CLI_QUERY_ENGINE_TYPE=binary
+```  
 
 NOTE - Authentication is intentionally omitted to keep focus on agent logic (as per assessment).
 
@@ -399,11 +400,13 @@ This project is deployed in a production-style environment using modern cloud pl
 ```env
 DATABASE_URL=...
 GROQ_API_KEY=...
+```  
 
 Frontend (Vercel)
 ```env
 VITE_API_BASE_URL=https://support-agent-backend.onrender.com
 Vite environment variables are injected at build time and require redeployment when changed.
+```  
 
 Notes
 1. Streaming responses are enabled for the Support Agent
