@@ -46,6 +46,8 @@ All conversations are **persisted**, **context-aware**, and **user-scoped**.
 
 ## 🧠 Agent Architecture
 
+<img src="images/architecture.png" width="900" />
+
 ### 🔹 Main Router Agent (LLM-Based)
 - Reads:
   - User message
