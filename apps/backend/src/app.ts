@@ -15,13 +15,24 @@ import { processChatMessage } from "./services/chat.service";
 
 const app = new OpenAPIHono();
 
-/* ---------------- CORS ---------------- */
+/* ---------------- CORS (FIXED FOR VERCEL + STREAMING) ---------------- */
 app.use(
-  "/*",
+  "*",
   cors({
-    origin: "http://localhost:5173",
+    origin: (origin) => {
+      // Allow server-to-server or curl
+      if (!origin) return "*";
+
+      // Allow localhost (dev)
+      if (origin.includes("localhost")) return origin;
+
+      // Allow all Vercel deployments (preview + prod)
+      if (origin.includes("vercel.app")) return origin;
+
+      return null; // block everything else
+    },
     allowMethods: ["GET", "POST", "OPTIONS"],
-    allowHeaders: ["Content-Type"],
+    allowHeaders: ["Content-Type", "Authorization"],
   })
 );
 
@@ -44,11 +55,13 @@ app.openapi(chatMessageRoute, async (c) => {
 });
 
 /* ---------------- SERVER ---------------- */
+const port = Number(process.env.PORT) || 3000;
+
 serve({
   fetch: app.fetch,
-  port: 3000,
+  port,
 });
 
-console.log("✅ Backend running on http://localhost:3000");
+console.log(`✅ Backend running on port ${port}`);
 
 export default app;
