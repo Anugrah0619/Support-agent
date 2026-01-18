@@ -1,81 +1,83 @@
-import { Message } from "@prisma/client";
-import { AgentType } from "./agent.constants";
+import type { Message, AgentType } from "@support-agent/types";
 import { classifyIntent } from "./main.agent";
 
-/**
- * Router Agent
- * - Uses LLM-based intent classification
- * - Applies continuation ONLY when safe
- * - Allows forced fresh intent after ROUTE_BACK
- */
+type RouteResult = AgentType | "unsupported";
+
 export async function routeMessage(
   message: string,
   history: Message[],
   forceFreshIntent = false
-): Promise<AgentType> {
+): Promise<RouteResult> {
   const text = message.toLowerCase();
 
+  /* -------------------------------
+     1️⃣ HARD BLOCK UNSUPPORTED INTENTS
+  -------------------------------- */
+  if (mentionsReturn(text) || mentionsCancel(text)) {
+    return "unsupported";
+  }
+
+  /* -------------------------------
+     2️⃣ STRONG KEYWORD ROUTING
+  -------------------------------- */
+  if (mentionsBilling(text)) return "billing";
+  if (mentionsOrder(text)) return "order";
+
+  /* -------------------------------
+     3️⃣ CONTINUATION LOGIC
+  -------------------------------- */
   const lastAgentMessage = [...history]
     .reverse()
     .find((m) => m.sender === "agent" && m.agentType);
 
-  // 1️⃣ CONTINUATION (ONLY IF NOT FORCED AND DOMAIN DOES NOT CHANGE)
-  if (!forceFreshIntent && lastAgentMessage) {
-    const lastAgent = lastAgentMessage.agentType as AgentType;
-
-    if (
-      isFollowUp(text) &&
-      !mentionsBilling(text) &&
-      !mentionsOrder(text)
-    ) {
-      return lastAgent;
-    }
+  if (!forceFreshIntent && lastAgentMessage && isFollowUp(text)) {
+    return lastAgentMessage.agentType as AgentType;
   }
 
-  // 2️⃣ LLM-BASED INTENT CLASSIFICATION (AUTHORITATIVE)
-  const intent = await classifyIntent({
+  /* -------------------------------
+     4️⃣ LLM FALLBACK
+  -------------------------------- */
+  return classifyIntent({
     message,
     history: history.map((m) => ({
       sender: m.sender,
       text: m.text,
     })),
   });
-
-  return intent;
 }
 
 /* ---------------- HELPERS ---------------- */
 
-function isFollowUp(text: string): boolean {
-  const followUps = [
-    "is it",
-    "has it",
-    "when",
-    "what about",
-    "status",
-    "and",
-    "then",
-    "now",
-    "that",
-    "it",
-  ];
-  return followUps.some((f) => text.startsWith(f));
-}
-
-function mentionsBilling(text: string): boolean {
+function mentionsOrder(text: string) {
   return (
-    text.includes("payment") ||
-    text.includes("refund") ||
-    text.includes("invoice") ||
-    text.includes("bill")
+    text.includes("order") ||
+    text.includes("shipment") ||
+    text.includes("delivery") ||
+    text.includes("tracking")
   );
 }
 
-function mentionsOrder(text: string): boolean {
+function mentionsBilling(text: string) {
   return (
-    text.includes("order") ||
-    text.includes("ship") ||
-    text.includes("delivery") ||
-    text.includes("tracking")
+    text.includes("payment") ||
+    text.includes("refund") ||
+    text.includes("invoice")
+  );
+}
+
+function mentionsReturn(text: string) {
+  return text.includes("return");
+}
+
+function mentionsCancel(text: string) {
+  return text.includes("cancel");
+}
+
+function isFollowUp(text: string) {
+  return (
+    text.startsWith("is it") ||
+    text.startsWith("when") ||
+    text.startsWith("what about") ||
+    text === "it"
   );
 }

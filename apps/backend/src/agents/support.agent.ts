@@ -1,11 +1,11 @@
 import { generateText, streamText } from "ai";
 import { groq } from "@ai-sdk/groq";
-import { getConversationHistory } from "../tools/support.tool";
+import type { Message } from "@support-agent/types";
 
-/* NON-STREAMING (unchanged) */
+/* NON-STREAMING */
 export async function handleSupportQuery(
   message: string,
-  context: { history: any[] }
+  context: { history: Message[] }
 ): Promise<string> {
   const formattedHistory = context.history
     .map((m) => `${m.sender}: ${m.text}`)
@@ -27,10 +27,10 @@ ${message}
   return result.text;
 }
 
-/* STREAMING VERSION (NEW) */
+/* STREAMING VERSION */
 export async function handleSupportQueryStream(
   message: string,
-  context: { history: any[] },
+  context: { history: Message[] },
   onToken: (token: string) => void
 ) {
   const formattedHistory = context.history

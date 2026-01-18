@@ -1,4 +1,6 @@
 import prisma from "../db/prisma";
+import type { Message } from "@support-agent/types";
+
 import { routeMessage } from "../agents/router.agent";
 import { handleSupportQuery } from "../agents/support.agent";
 import { handleOrderQuery } from "../agents/order.agent";
@@ -12,20 +14,12 @@ export async function processChatMessage(params: {
 }) {
   const { userId, conversationId, message } = params;
 
-  // 1️⃣ Ensure conversation exists (RBAC enforced)
   const conversation = conversationId
-    ? await prisma.conversation.findFirst({
-        where: { id: conversationId, userId },
-      })
-    : await prisma.conversation.create({
-        data: { userId },
-      });
+    ? await prisma.conversation.findFirst({ where: { id: conversationId, userId } })
+    : await prisma.conversation.create({ data: { userId } });
 
-  if (!conversation) {
-    throw new Error("Conversation not found or access denied");
-  }
+  if (!conversation) throw new Error("Conversation access denied");
 
-  // 2️⃣ Save user message
   await prisma.message.create({
     data: {
       conversationId: conversation.id,
@@ -34,56 +28,40 @@ export async function processChatMessage(params: {
     },
   });
 
-  // 3️⃣ Load conversation history ONCE (source of truth)
-  const history = await getConversationHistory(conversation.id);
+  const history: Message[] = await getConversationHistory(conversation.id);
 
-  // 🛡️ Safety guard (prevents your exact crash)
-  if (!history || !Array.isArray(history)) {
-    throw new Error("Conversation history missing");
-  }
-
-  // 4️⃣ Decide agent
-  const agentType = await routeMessage(message, history);
+  const route = await routeMessage(message, history);
 
   let reply = "";
 
-  // 5️⃣ Delegate with CORRECT context
-  switch (agentType) {
-    case "order":
-      reply = await handleOrderQuery(message, {
-        userId,
-        history,
-      });
-      break;
-
-    case "billing":
-      reply = await handleBillingQuery(message, {
-        userId,
-        history,
-      });
-      break;
-
-    case "support":
-    default:
-      reply = await handleSupportQuery(message, {
-        history,
-      });
-      break;
+  if (route === "unsupported") {
+    reply =
+      "Order cancellation or return is not supported at the moment. I can help you with order status or payment details.";
+  } else {
+    switch (route) {
+      case "order":
+        reply = await handleOrderQuery(message, { userId, history });
+        break;
+      case "billing":
+        reply = await handleBillingQuery(message, { userId, history });
+        break;
+      default:
+        reply = await handleSupportQuery(message, { history });
+    }
   }
 
-  // 6️⃣ Save agent reply
   await prisma.message.create({
     data: {
       conversationId: conversation.id,
       sender: "agent",
       text: reply,
-      agentType,
+      agentType: route === "unsupported" ? null : route,
     },
   });
 
   return {
     conversationId: conversation.id,
     reply,
-    agentType,
+    agentType: route,
   };
 }

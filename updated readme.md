@@ -24,8 +24,9 @@ All conversations are **persisted**, **context-aware**, and **user-scoped**.
 ### ✅ Agentic AI Architecture
 - LLM-based **Router Agent**
 - Specialized **Support, Order, and Billing agents**
-- Tool calling from sub-agents
-- Agent handoff when scope changes
+- Tool-first agents for order and billing queries (no hallucination)
+- LLM-based support agent for general and ambiguous queries
+- Deterministic agent handoff with explicit unsupported-intent handling
 
 ### ✅ Contextual Conversations
 - Conversation memory stored in DB
@@ -64,9 +65,11 @@ All conversations are **persisted**, **context-aware**, and **user-scoped**.
 - Clarifications
 - FAQs
 - Context resolution
+- Handles ambiguous queries and asks clarifying questions
 
 **Tools**
 - Query conversation history
+- LLM-based responses (streaming enabled)
 
 ---
 
@@ -77,8 +80,11 @@ All conversations are **persisted**, **context-aware**, and **user-scoped**.
 - Order follow-ups
 
 **Tools**
-- Fetch latest order by user
-- Check delivery status
+- Fetch latest order by user (database-backed)
+
+**Design**
+- Tool-first, deterministic agent
+- Does not use LLMs to avoid hallucination
 
 ---
 
@@ -89,8 +95,18 @@ All conversations are **persisted**, **context-aware**, and **user-scoped**.
 - Invoice queries
 
 **Tools**
-- Fetch payments by user
-- Check refund status
+- Fetch payment and refund status from database
+
+**Design**
+- Tool-first, deterministic agent
+- Returns factual responses only (no advice or speculation)
+
+## 🛡️ Safety & Hallucination Control
+
+- Order and Billing agents are strictly tool-driven and never rely on LLM-generated text
+- Unsupported intents such as order cancellation or returns are explicitly rejected
+- LLM usage is limited to the Support agent to prevent incorrect or speculative responses
+- This design mirrors production-grade AI systems where factual domains are protected from hallucination
 
 ---
 
@@ -174,11 +190,16 @@ support-agent/
 │       ├── index.html
 │       └── package.json
 │
-├── packages/                    # (Reserved for shared types / RPC)
+├── packages/
+       ├── types/                # (Reserved for shared types / RPC)
 │
 ├── turbo.json
 ├── package.json                 # Root workspace config
 └── README.md
+
+### Packages
+- `packages/types` → Shared domain models used by backend and frontend
+- Future phases introduce API contracts and RPC definitions
 
 ---
 
@@ -321,5 +342,7 @@ When will it be delivered?
 - Conversation memory enables real multi-turn conversational behavior  
 - RBAC enforced using `userId` without introducing authentication complexity  
 - Architecture closely mirrors real-world agentic AI systems used in production  
+- Streaming responses are enabled only for the Support agent
+- Order and Billing agents return atomic, non-streaming responses for consistency and correctness
 
 ---
