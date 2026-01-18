@@ -409,3 +409,22 @@ Notes
 1. Streaming responses are enabled for the Support Agent
 2. CORS preflight and rate-limiting are handled explicitly
 3. Authentication is intentionally omitted to focus on agentic AI design
+
+---
+
+## 🚀 Future Scope
+
+- **RAG-based Semantic Search:**  
+  Integrate Retrieval-Augmented Generation (RAG) to enable semantic search over FAQs, documentation, and historical support data using vector databases.
+
+- **Hybrid Agent Routing:**  
+  Extend the router agent to dynamically choose between database tools, RAG retrieval, and pure LLM reasoning based on query type.
+
+- **Improved Context Optimization:**  
+  Apply semantic summarization and context compaction to support longer conversations with reduced token usage.
+
+- **Workflow & Automation:**  
+  Add workflow orchestration for actions like ticket creation, escalations, and human handoff.
+
+- **Observability & Feedback:**  
+  Incorporate user feedback and tracing to continuously improve agent accuracy and routing decisions.
