@@ -9,6 +9,7 @@ function App() {
   const [conversationId, setConversationId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [reasoning, setReasoning] = useState(null);
 
   async function sendMessage() {
     if (!input.trim() || loading) return;
@@ -30,7 +31,7 @@ function App() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userId: 1, // demo user (as per assessment)
+          userId: 1, // demo user
           conversationId,
           message: userMessage,
         }),
@@ -57,12 +58,29 @@ function App() {
 
         const chunk = decoder.decode(value);
 
-        // Typing indicator
-        if (chunk.includes("[agent_typing]")) {
-          setIsTyping(true);
+        // ---------- REASONING TOKENS ----------
+        if (chunk.includes("[thinking]")) {
+          setReasoning("Thinking…");
           continue;
         }
 
+        if (chunk.includes("[checking order]")) {
+          setReasoning("Checking your order…");
+          continue;
+        }
+
+        if (chunk.includes("[checking payment]")) {
+          setReasoning("Checking payment details…");
+          continue;
+        }
+
+        if (chunk.includes("[answering]")) {
+          setReasoning("Preparing response…");
+          continue;
+        }
+
+        // ---------- REAL AGENT TEXT ----------
+        setReasoning(null);
         setIsTyping(false);
         agentText += chunk;
 
@@ -87,6 +105,7 @@ function App() {
     } finally {
       setLoading(false);
       setIsTyping(false);
+      setReasoning(null);
     }
   }
 
@@ -101,6 +120,12 @@ function App() {
             {m.text}
           </div>
         ))}
+
+        {reasoning && (
+          <div className="message agent">
+            <em>{reasoning}</em>
+          </div>
+        )}
 
         {isTyping && (
           <div className="message agent">

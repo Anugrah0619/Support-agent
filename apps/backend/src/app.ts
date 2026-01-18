@@ -2,6 +2,7 @@ import "dotenv/config";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { cors } from "hono/cors";
 import { serve } from "@hono/node-server";
+import { rateLimitMiddleware } from "./middlewares/rateLimit.middleware";
 
 /* Existing routes */
 import chatRoutes from "./routes/chat.routes";
@@ -23,6 +24,9 @@ app.use(
     allowHeaders: ["Content-Type"],
   })
 );
+
+/* ---------------- RATE LIMIT ---------------- */
+app.use("/api/chat/*", rateLimitMiddleware);
 
 /* ---------------- HEALTH ---------------- */
 app.get("/api/health", (c) => c.json({ status: "ok" }));

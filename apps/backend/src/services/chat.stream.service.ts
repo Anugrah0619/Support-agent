@@ -41,10 +41,12 @@ export async function processChatMessageStream(params: {
 
   const history: Message[] = await getConversationHistory(conversation.id);
   const route = await routeMessage(message, history);
+  onToken("[thinking]");
 
   let finalReply = "";
 
   if (route === "support") {
+    onToken("[answering]");
     await handleSupportQueryStream(
       message,
       { history },
@@ -54,12 +56,15 @@ export async function processChatMessageStream(params: {
       }
     );
   } else if (route === "order") {
+    onToken("[checking order]");
     finalReply = await handleOrderQuery(message, { userId, history });
     onToken(finalReply);
   } else if (route === "billing") {
+    onToken("[checking payment]");
     finalReply = await handleBillingQuery(message, { userId, history });
     onToken(finalReply);
   } else {
+    onToken("[answering]");
     finalReply =
       "This request is not supported. I can help with order status or payment details.";
     onToken(finalReply);
