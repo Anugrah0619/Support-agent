@@ -6,6 +6,11 @@ const MAX_REQUESTS = 30;
 const requestMap = new Map<string, { count: number; start: number }>();
 
 export async function rateLimitMiddleware(c: Context, next: Next) {
+  // ✅ IMPORTANT: Allow CORS preflight requests
+  if (c.req.method === "OPTIONS") {
+    return next();
+  }
+
   const ip = c.req.header("x-forwarded-for") || "local";
   const now = Date.now();
 
